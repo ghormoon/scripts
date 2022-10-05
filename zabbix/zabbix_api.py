@@ -33,6 +33,7 @@ import string
 import sys
 import ssl
 import socket
+from packaging import version
 try:
     import urllib2
 except ImportError:
@@ -213,7 +214,10 @@ class ZabbixAPI(object):
         hashed_pw_string = "md5(" + hashlib.md5(l_password.encode('utf-8')).hexdigest() + ")"
         self.debug(logging.DEBUG, "Trying to login with %s:%s" %
                 (repr(l_user), repr(hashed_pw_string)))
-        obj = self.json_obj('user.login', {'user': l_user, 'password': l_password}, auth=False)
+        if version.parse(self.api_version()) >= version.parse('5.4'):
+            obj = self.json_obj('user.login', {'username': l_user, 'password': l_password}, auth=False)
+        else:
+            obj = self.json_obj('user.login', {'user': l_user, 'password': l_password}, auth=False)
         result = self.do_request(obj)
         self.auth = result['result']
 
